@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use argh::FromArgs;
-use godot::prelude::{Dictionary, GodotString};
+use godot::prelude::{Dictionary, GString};
 
 const CUSTOM_PREFIX: &str = "custom:";
 
@@ -51,12 +51,12 @@ impl Args {
     pub fn to_dict(&self) -> Dictionary {
         let mut r = Dictionary::new();
 
-        r.insert("verbose", self.verbose);
-        r.insert("quiet", self.quiet);
-        r.insert("max_fps", self.max_fps.unwrap_or(0));
+        let _ = r.insert("verbose", self.verbose);
+        let _ = r.insert("quiet", self.quiet);
+        let _ = r.insert("max_fps", self.max_fps.unwrap_or(0));
 
         if let Some(c) = &self.commands {
-            r.insert("has_command", true);
+            let _ = r.insert("has_command", true);
 
             // TODO this seems weird but there doesn't seem to be a way to pass a trait
             // object to argh. The optimal solution would be Option<Box<dyn FromArgs + GodotCommand>>,
@@ -66,7 +66,7 @@ impl Args {
                 Commands::WithModel(c) => c.populate_dict(&mut r),
             }
         } else {
-            r.insert("has_command", false);
+            let _ = r.insert("has_command", false);
         }
 
         r
@@ -98,16 +98,17 @@ pub struct LaunchCommand {
 
 impl GodotCommand for LaunchCommand {
     fn populate_dict(&self, dict: &mut Dictionary) {
-        dict.insert("command", "launch");
+        let _ = dict.insert("command", "launch");
 
-        dict.insert("name", GodotString::from(&self.runner_data));
-        dict.insert(
+        let _ = dict.insert("name", GString::from(&self.runner_data));
+        let _ = dict.insert(
             "tracker",
-            if let Some(tracker) = &self.tracker {
-                GodotString::from(tracker)
-            } else {
-                GodotString::new()
-            },
+            GString::from(
+                self.tracker
+                    .as_ref()
+                    .map(|t| t.as_ref())
+                    .unwrap_or(""),
+            ),
         );
     }
 }
@@ -180,32 +181,35 @@ pub struct WithModelCommand {
 
 impl GodotCommand for WithModelCommand {
     fn populate_dict(&self, dict: &mut Dictionary) {
-        dict.insert("command", "with_model");
+        let _ = dict.insert("command", "with_model");
 
-        dict.insert("model_path", GodotString::from(&self.model_path));
-        dict.insert(
+        let _ = dict.insert("model_path", GString::from(&self.model_path));
+        let _ = dict.insert(
             "model_type",
-            if let Some(v) = &self.model_type {
-                GodotString::from(v)
-            } else {
-                GodotString::new()
-            },
+            GString::from(
+                self.model_type
+                    .as_ref()
+                    .map(|t| t.as_ref())
+                    .unwrap_or(""),
+            ),
         );
-        dict.insert(
+        let _ = dict.insert(
             "runner_path",
-            if let Some(v) = &self.runner_path {
-                GodotString::from(v)
-            } else {
-                GodotString::new()
-            },
+            GString::from(
+                self.runner_path
+                    .as_ref()
+                    .map(|s| s.as_ref())
+                    .unwrap_or(""),
+            ),
         );
-        dict.insert(
+        let _ = dict.insert(
             "gui_path",
-            if let Some(v) = &self.gui_path {
-                GodotString::from(v)
-            } else {
-                GodotString::new()
-            },
+            GString::from(
+                self.gui_path
+                    .as_ref()
+                    .map(|s| s.as_ref())
+                    .unwrap_or(""),
+            ),
         );
     }
 }

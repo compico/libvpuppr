@@ -17,7 +17,7 @@ chrono = { version = "0.4", default-features = false, features = [
     "time",
     "serde",
 ] }
-godot = { git = "https://github.com/virtual-puppet-project/gdext", branch = "vpuppr", features = [
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master", features = [
     "serde",
 ] }
 log = "0.4.20"

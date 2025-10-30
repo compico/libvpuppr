@@ -23,7 +23,7 @@ impl DataParser {
                             "=head" => {
                                 let vals = v.splitn(5, ',').collect::<Vec<&str>>();
 
-                                r.insert(
+                                let _ = r.insert(
                                     "rotation",
                                     Vector3::new(
                                         vals.get(0)
@@ -38,7 +38,7 @@ impl DataParser {
                                     ),
                                 );
 
-                                r.insert(
+                                let _ = r.insert(
                                     "position",
                                     Vector3::new(
                                         vals.get(3)
@@ -56,7 +56,7 @@ impl DataParser {
                             "rightEye" => {
                                 let vals = v.splitn(2, ',').collect::<Vec<&str>>();
 
-                                r.insert(
+                                let _ = r.insert(
                                     "right_eye",
                                     Vector3::new(
                                         vals.get(0)
@@ -74,7 +74,7 @@ impl DataParser {
                             "leftEye" => {
                                 let vals = v.splitn(2, ',').collect::<Vec<&str>>();
 
-                                r.insert(
+                                let _ = r.insert(
                                     "left_eye",
                                     Vector3::new(
                                         vals.get(0)
@@ -92,7 +92,7 @@ impl DataParser {
                             _ => error!("Unhandled ifm data key: {k}"),
                         }
                     } else if let Some((k, v)) = v.split_once("-") {
-                        blend_shapes.insert(
+                        let _ = blend_shapes.insert(
                             k
                                 // TODO maybe use https://github.com/BurntSushi/aho-corasick for faster replace?
                                 .replace("_L", "left")
@@ -111,7 +111,7 @@ impl DataParser {
             }
         }
 
-        r.insert("blend_shapes", blend_shapes);
+        let _ = r.insert("blend_shapes", blend_shapes);
         r
     }
 
@@ -139,25 +139,23 @@ impl DataParser {
             pub v: f32,
         }
 
-        let data = match serde_json::from_slice::<VTubeStudioData>(data.as_slice()) {
-            Ok(v) => v,
-            Err(e) => {
+        let data = serde_json::from_slice::<VTubeStudioData>(data.as_slice())
+            .unwrap_or_else(|e| {
                 error!("{e}");
                 VTubeStudioData::default()
-            }
-        };
+            });
 
-        r.insert("rotation", data.rotation.unwrap_or_default());
-        r.insert("position", data.position.unwrap_or_default());
-        r.insert("eye_left", data.eye_left.unwrap_or_default());
-        r.insert("eye_right", data.eye_right.unwrap_or_default());
-        r.insert(
+        let _ = r.insert("rotation", data.rotation.unwrap_or_default());
+        let _ = r.insert("position", data.position.unwrap_or_default());
+        let _ = r.insert("eye_left", data.eye_left.unwrap_or_default());
+        let _ = r.insert("eye_right", data.eye_right.unwrap_or_default());
+        let _ = r.insert(
             "blend_shapes",
             Array::from_iter(data.blend_shapes.unwrap_or_default().into_iter().map(|v| {
                 let mut r = Dictionary::new();
 
-                r.insert("k", v.k.to_lowercase());
-                r.insert("v", v.v);
+                let _ = r.insert("k", v.k.to_lowercase());
+                let _ = r.insert("v", v.v);
 
                 r
             })),
