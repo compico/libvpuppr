@@ -15,7 +15,7 @@ use rayon::prelude::*;
 use crate::{
     gstring,
     model::{self, tracking_data::VTubeStudioData, IFacialMocapData},
-    Logger,
+    Log,
 };
 
 use super::{BlendShapeMapping, IkTargets3d, Puppet, Puppet3d};
@@ -58,8 +58,8 @@ impl Into<model::puppet::VrmType> for VrmType {
 enum VrmFeatures {
     /// Base VRM 0.0 and 1.0 specification.
     Base { left_eye_id: i32, right_eye_id: i32 },
-    /// Generally refers to an additional 52 blend shapes provided outside
-    /// of the VRM specification.
+    /// Generally refers to an additional 52 blend shapes
+    /// provided outside the VRM specification.
     PerfectSync,
 }
 
@@ -73,7 +73,7 @@ impl Default for VrmFeatures {
 }
 
 #[derive(Debug, GodotClass)]
-#[class(base = Node3D)]
+#[class(base = Node3D, init)]
 // Puppet3d
 #[property(name = head_bone, type = GodotString, get = get_head_bone, set = set_head_bone)]
 #[property(name = head_bone_id, type = GodotString, get = get_head_bone_id, set = set_head_bone_id)]
@@ -96,7 +96,7 @@ impl Default for VrmFeatures {
 // #[property(name = vrm_type, type = VrmType, get = get_vrm_type, set = set_vrm_type)]
 pub struct VrmPuppet {
     #[var]
-    pub logger: Gd<Logger>,
+    pub logger: Gd<Log>,
 
     #[base]
     pub base: Base<Node3D>,
@@ -120,24 +120,22 @@ pub struct VrmPuppet {
 
 #[godot_api]
 impl Node3DVirtual for VrmPuppet {
-    fn init(base: godot::obj::Base<Self::Base>) -> Self {
-        Self {
-            logger: Logger::create("VrmPuppet".into()),
-
-            base,
-
-            puppet3d: model::puppet::Puppet3d::default(),
-            vrm_puppet: model::puppet::VrmPuppet::default(),
-
-            vrm_features: VrmFeatures::default(),
-            vrm_meta: None,
-
-            skeleton: None,
-            ik_targets_3d: None,
-
-            blend_shape_mappings: HashMap::new(),
-            expression_mappings: HashMap::new(),
-        }
+    #[func]
+    fn create() -> Gd<Self> {
+        Gd::from_init_fn(|base| {
+            Self {
+                logger: Log::create("VrmPuppet".into()),
+                base,
+                puppet3d: model::puppet::Puppet3d::default(),
+                vrm_puppet: model::puppet::VrmPuppet::default(),
+                vrm_features: VrmFeatures::default(),
+                vrm_meta: None,
+                skeleton: None,
+                ik_targets_3d: None,
+                blend_shape_mappings: HashMap::new(),
+                expression_mappings: HashMap::new(),
+            }
+        })
     }
 
     fn ready(&mut self) {
@@ -579,12 +577,12 @@ impl VrmPuppet {
 }
 
 impl Puppet for VrmPuppet {
-    fn logger(&self) -> Logger {
+    fn logger(&self) -> Log {
         self.logger.bind().clone()
     }
 
     fn managed_node(&self) -> Gd<Node> {
-        match self.base.get_child(0) {
+        match self.base.get_child(0).unwrap() {
             Some(v) => v,
             None => {
                 self.logger()

@@ -1,24 +1,26 @@
 mod cli;
 mod data_parser;
-mod logger;
+mod log;
 // pub mod model;
 // mod puppets;
 
+use ::log::{error, LevelFilter};
 use godot::{
-    engine::{global::Error, Os},
     prelude::*,
 };
-use log::{error, LevelFilter};
+use godot::classes::Os;
+use godot::global::Error;
 
-pub use logger::Logger;
+pub use log::Log;
 
 /// Helper struct for information about the libvpuppr library.
 #[derive(Debug, Default, GodotClass)]
+#[class(base = RefCounted)]
 struct LibVpuppr;
 
 #[godot_api]
-impl RefCountedVirtual for LibVpuppr {
-    fn init(_base: godot::obj::Base<Self::Base>) -> Self {
+impl IRefCounted for LibVpuppr {
+    fn init(_base: Base<RefCounted>) -> Self {
         Self
     }
 }
@@ -67,20 +69,20 @@ impl LibVpuppr {
                 LevelFilter::Info
             })
             .log_fn(LevelFilter::Info, |r| {
-                Logger::global(LevelFilter::Info, r.target(), r.args().to_string().as_str());
+                Log::global(LevelFilter::Info, r.target(), r.args().to_string().as_str());
             })
             .log_fn(LevelFilter::Warn, |r| {
-                Logger::global(LevelFilter::Warn, r.target(), r.args().to_string().as_str());
+                Log::global(LevelFilter::Warn, r.target(), r.args().to_string().as_str());
             })
             .log_fn(LevelFilter::Error, |r| {
-                Logger::global(
+                Log::global(
                     LevelFilter::Error,
                     r.target(),
                     r.args().to_string().as_str(),
                 );
             })
             .log_fn(LevelFilter::Debug, |r| {
-                Logger::global(
+                Log::global(
                     LevelFilter::Debug,
                     r.target(),
                     r.args().to_string().as_str(),
@@ -99,15 +101,15 @@ impl LibVpuppr {
         let mut mapping = Dictionary::new();
 
         let is_debug = if cfg!(debug_assertions) { true } else { false };
-        mapping.insert("DEBUG", is_debug);
-        mapping.insert("RELEASE", !is_debug);
+        let _ = mapping.insert("DEBUG", is_debug);
+        let _ = mapping.insert("RELEASE", !is_debug);
 
-        mapping.insert("VERSION", env!("CARGO_PKG_VERSION"));
-        mapping.insert("VERSION_MAJOR", env!("CARGO_PKG_VERSION_MAJOR"));
-        mapping.insert("VERSION_MINOR", env!("CARGO_PKG_VERSION_MINOR"));
-        mapping.insert("VERSION_PATCH", env!("CARGO_PKG_VERSION_PATCH"));
+        let _ = mapping.insert("VERSION", env!("CARGO_PKG_VERSION"));
+        let _ = mapping.insert("VERSION_MAJOR", env!("CARGO_PKG_VERSION_MAJOR"));
+        let _ = mapping.insert("VERSION_MINOR", env!("CARGO_PKG_VERSION_MINOR"));
+        let _ = mapping.insert("VERSION_PATCH", env!("CARGO_PKG_VERSION_PATCH"));
 
-        mapping.insert("LIBVPUPPR_AUTHORS", env!("CARGO_PKG_AUTHORS"));
+        let _ = mapping.insert("LIBVPUPPR_AUTHORS", env!("CARGO_PKG_AUTHORS"));
 
         mapping
     }

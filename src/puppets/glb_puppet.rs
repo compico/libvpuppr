@@ -8,7 +8,7 @@ use godot::{
 use crate::{
     gstring,
     model::tracking_data::{IFacialMocapData, VTubeStudioData},
-    Logger,
+    Log,
 };
 
 use super::{BlendShapeMapping, Puppet, Puppet3d};
@@ -20,7 +20,7 @@ const MESH_INST_3D: &str = "MeshInstance3D";
 #[class(base = Node3D)]
 pub struct GlbPuppet {
     #[var]
-    pub logger: Gd<Logger>,
+    pub logger: Gd<Logg>,
 
     #[base]
     base: Base<Node3D>,
@@ -43,7 +43,7 @@ pub struct GlbPuppet {
 impl Node3DVirtual for GlbPuppet {
     fn init(base: godot::obj::Base<Self::Base>) -> Self {
         Self {
-            logger: Logger::create(gstring!("GlbPuppet")),
+            logger: Log::create(gstring!("GlbPuppet")),
 
             base,
 
@@ -173,7 +173,7 @@ impl GlbPuppet {
 }
 
 impl Puppet for GlbPuppet {
-    fn logger(&self) -> Logger {
+    fn logger(&self) -> Log {
         self.logger.bind().clone()
     }
 

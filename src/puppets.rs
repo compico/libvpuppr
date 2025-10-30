@@ -12,7 +12,7 @@ use godot::{
 use crate::{
     gstring,
     model::tracking_data::{IFacialMocapData, VTubeStudioData},
-    Logger,
+    Log,
 };
 
 #[derive(Debug, Default, GodotClass)]
@@ -42,7 +42,7 @@ pub struct IkTargets3d {
 impl IkTargets3d {}
 
 pub trait Puppet {
-    fn logger(&self) -> Logger;
+    fn logger(&self) -> Log;
     fn managed_node(&self) -> Gd<Node>;
 }
 

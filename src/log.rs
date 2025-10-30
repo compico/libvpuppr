@@ -1,10 +1,12 @@
 use std::io::Write;
 
-use godot::{engine::ProjectSettings, prelude::*};
+use godot::prelude::*;
+use godot::classes::ProjectSettings;
 use log::LevelFilter;
 use once_cell::sync::Lazy;
 
 const MAX_LOGS: usize = 128;
+
 // TODO could use arrayvec
 static mut LOG_STORE: Lazy<Vec<String>> = Lazy::new(|| Vec::with_capacity(MAX_LOGS));
 
@@ -32,7 +34,7 @@ fn add_to_log_store(message: String) {
 fn flush_logs() {
     let project_settings = ProjectSettings::singleton();
 
-    let path = project_settings.globalize_path(GodotString::from("user://vpuppr.log"));
+    let path = project_settings.globalize_path(&GString::from("user://vpuppr.log"));
 
     let mut opts = std::fs::OpenOptions::new();
     opts.truncate(false).write(true).create(true);
@@ -80,29 +82,32 @@ impl From<LevelFilter> for LogLevel {
 
 /// A structured logger that helps work around Godot dropping logs when it crashes.
 #[derive(Debug, Clone, GodotClass)]
-pub struct Logger {
+#[class(base = RefCounted)]
+pub struct Log {
     name: String,
 }
 
 #[godot_api]
-impl RefCountedVirtual for Logger {
-    fn init(_base: godot::obj::Base<Self::Base>) -> Self {
-        Self::new("DefaultLogger".to_string())
+impl IRefCounted for Log {
+    fn init(_base: Base<RefCounted>) -> Self {
+        Self {
+            name: "DefaultLogger".to_string(),
+        }
     }
 }
 
 #[godot_api]
-impl Logger {
-    /// Create a new `Logger` in Godot with the given name. Loggers may have
+impl Log {
+    /// Create a new `Log` in Godot with the given name. Loggers may have
     /// duplicate names but this is **_strongly_** discouraged.
     #[func]
-    pub fn create(name: GodotString) -> Gd<Logger> {
-        Gd::new(Self::new(name.into()))
+    pub fn create(name: GString) -> Gd<Log> {
+        Gd::from_init_fn(|_base| Log { name: name.to_string() })
     }
 
     /// Sets the name of the logger.
     #[func]
-    pub fn set_name(&mut self, name: GodotString) {
+    pub fn set_name(&mut self, name: GString) {
         self.name = name.into();
     }
 
@@ -133,8 +138,8 @@ impl Logger {
 
     /// Send a log using an anonymous logger. Logs are printed to stdout.
     #[func(rename = global)]
-    pub fn global_bound(source: GodotString, message: Variant) {
-        Logger::global(
+    pub fn global_bound(source: GString, message: Variant) {
+        Log::global(
             LevelFilter::Info,
             source.to_string(),
             message.stringify().to_string(),
@@ -142,7 +147,7 @@ impl Logger {
     }
 }
 
-impl Logger {
+impl Log {
     /// Create a new logger with the given name.
     fn new(name: String) -> Self {
         Self { name }
