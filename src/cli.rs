@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use argh::FromArgs;
-use godot::prelude::{Dictionary, GString};
+use godot::prelude::{Dictionary, GString, Variant};
 
 const CUSTOM_PREFIX: &str = "custom:";
 
@@ -48,8 +48,8 @@ impl Args {
     ///
     /// # Note
     /// **All keys must always be provided!**
-    pub fn to_dict(&self) -> Dictionary {
-        let mut r = Dictionary::new();
+    pub fn to_dict(&self) -> Dictionary<GString, Variant> {
+        let mut r: Dictionary<GString, Variant> = Dictionary::new();
 
         let _ = r.insert("verbose", self.verbose);
         let _ = r.insert("quiet", self.quiet);
@@ -74,7 +74,7 @@ impl Args {
 }
 
 trait GodotCommand {
-    fn populate_dict(&self, dict: &mut Dictionary);
+    fn populate_dict(&self, dict: &mut Dictionary<GString, Variant>);
 }
 
 #[derive(Debug, FromArgs)]
@@ -97,18 +97,13 @@ pub struct LaunchCommand {
 }
 
 impl GodotCommand for LaunchCommand {
-    fn populate_dict(&self, dict: &mut Dictionary) {
+    fn populate_dict(&self, dict: &mut Dictionary<GString, Variant>) {
         let _ = dict.insert("command", "launch");
 
-        let _ = dict.insert("name", GString::from(&self.runner_data));
+        let _ = dict.insert("name", self.runner_data.clone());
         let _ = dict.insert(
             "tracker",
-            GString::from(
-                self.tracker
-                    .as_ref()
-                    .map(|t| t.as_ref())
-                    .unwrap_or(""),
-            ),
+            self.tracker.as_ref().map(|t| t.as_ref()).unwrap_or(""),
         );
     }
 }
@@ -180,36 +175,21 @@ pub struct WithModelCommand {
 }
 
 impl GodotCommand for WithModelCommand {
-    fn populate_dict(&self, dict: &mut Dictionary) {
+    fn populate_dict(&self, dict: &mut Dictionary<GString, Variant>) {
         let _ = dict.insert("command", "with_model");
 
-        let _ = dict.insert("model_path", GString::from(&self.model_path));
+        let _ = dict.insert("model_path", self.model_path.clone());
         let _ = dict.insert(
             "model_type",
-            GString::from(
-                self.model_type
-                    .as_ref()
-                    .map(|t| t.as_ref())
-                    .unwrap_or(""),
-            ),
+            self.model_type.as_ref().map(|t| t.as_ref()).unwrap_or(""),
         );
         let _ = dict.insert(
             "runner_path",
-            GString::from(
-                self.runner_path
-                    .as_ref()
-                    .map(|s| s.as_ref())
-                    .unwrap_or(""),
-            ),
+            self.runner_path.as_ref().map(|s| s.as_ref()).unwrap_or(""),
         );
         let _ = dict.insert(
             "gui_path",
-            GString::from(
-                self.gui_path
-                    .as_ref()
-                    .map(|s| s.as_ref())
-                    .unwrap_or(""),
-            ),
+            self.gui_path.as_ref().map(|s| s.as_ref()).unwrap_or(""),
         );
     }
 }

@@ -43,7 +43,7 @@ pub struct GlbPuppet {
 impl Node3DVirtual for GlbPuppet {
     fn init(base: godot::obj::Base<Self::Base>) -> Self {
         Self {
-            logger: Log::create(gstring!("GlbPuppet")),
+            logger: Log::new(gstring!("GlbPuppet")),
 
             base,
 

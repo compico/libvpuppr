@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use godot::prelude::*;
 use godot::classes::ProjectSettings;
+use godot::prelude::*;
 use log::LevelFilter;
 use once_cell::sync::Lazy;
 
@@ -64,7 +64,7 @@ enum LogLevel {
     Error,
 
     Debug,
-    Global,
+    // Global,
 }
 
 impl From<LevelFilter> for LogLevel {
@@ -102,7 +102,9 @@ impl Log {
     /// duplicate names but this is **_strongly_** discouraged.
     #[func]
     pub fn create(name: GString) -> Gd<Log> {
-        Gd::from_init_fn(|_base| Log { name: name.to_string() })
+        Gd::from_init_fn(|_base| Log {
+            name: name.to_string(),
+        })
     }
 
     /// Sets the name of the logger.

@@ -122,19 +122,17 @@ pub struct VrmPuppet {
 impl Node3DVirtual for VrmPuppet {
     #[func]
     fn create() -> Gd<Self> {
-        Gd::from_init_fn(|base| {
-            Self {
-                logger: Log::create("VrmPuppet".into()),
-                base,
-                puppet3d: model::puppet::Puppet3d::default(),
-                vrm_puppet: model::puppet::VrmPuppet::default(),
-                vrm_features: VrmFeatures::default(),
-                vrm_meta: None,
-                skeleton: None,
-                ik_targets_3d: None,
-                blend_shape_mappings: HashMap::new(),
-                expression_mappings: HashMap::new(),
-            }
+        Gd::from_init_fn(|base| Self {
+            logger: Log::new("VrmPuppet"),
+            base,
+            puppet3d: model::puppet::Puppet3d::default(),
+            vrm_puppet: model::puppet::VrmPuppet::default(),
+            vrm_features: VrmFeatures::default(),
+            vrm_meta: None,
+            skeleton: None,
+            ik_targets_3d: None,
+            blend_shape_mappings: HashMap::new(),
+            expression_mappings: HashMap::new(),
         })
     }
 
@@ -606,7 +604,8 @@ impl Puppet3d for VrmPuppet {
         let skeleton = self.skeleton.as_mut().unwrap();
 
         if let Some(ik) = self.ik_targets_3d.as_mut() {
-            let rotation = Vector3::new(data.rotation.x, data.rotation.y, data.rotation.z).to_variant();
+            let rotation =
+                Vector3::new(data.rotation.x, data.rotation.y, data.rotation.z).to_variant();
             if let Some(v) = ik.bind_mut().head.as_mut() {
                 v.call_deferred("set_rotation_degrees".into(), &[rotation.clone()]);
             }

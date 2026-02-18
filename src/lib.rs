@@ -5,11 +5,9 @@ mod log;
 // mod puppets;
 
 use ::log::{error, LevelFilter};
-use godot::{
-    prelude::*,
-};
 use godot::classes::Os;
 use godot::global::Error;
+use godot::prelude::*;
 
 pub use log::Log;
 
@@ -29,7 +27,7 @@ impl IRefCounted for LibVpuppr {
 impl LibVpuppr {
     /// Parse user args and return a [Dictionary] containing all args found.
     #[func]
-    fn parse_user_args() -> Dictionary {
+    fn parse_user_args() -> Dictionary<GString, Variant> {
         let godot_user_args = Os::singleton()
             .get_cmdline_user_args()
             .as_slice()
@@ -48,7 +46,7 @@ impl LibVpuppr {
             Ok(v) => v.to_dict(),
             Err(e) => {
                 error!("{e}");
-                Dictionary::new()
+                Dictionary::<GString, Variant>::new()
             }
         }
     }
@@ -97,8 +95,8 @@ impl LibVpuppr {
 
     /// A mapping of various vpuppr metadata.
     #[func]
-    fn metadata() -> Dictionary {
-        let mut mapping = Dictionary::new();
+    fn metadata() -> Dictionary<GString, Variant> {
+        let mut mapping = Dictionary::<GString, Variant>::new();
 
         let is_debug = if cfg!(debug_assertions) { true } else { false };
         let _ = mapping.insert("DEBUG", is_debug);
