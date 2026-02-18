@@ -1,4 +1,8 @@
-use godot::prelude::*;
+use godot::{
+    classes::class_macros::private::virtuals::Os::{Array, PackedByteArray, Vector3},
+    meta::ToGodot,
+    prelude::{godot_api, Dictionary, GString, GodotClass, Variant},
+};
 use log::error;
 use serde::{Deserialize, Serialize};
 
@@ -9,9 +13,9 @@ pub struct DataParser;
 #[godot_api]
 impl DataParser {
     #[func]
-    pub fn ifacial_mocap(data: PackedByteArray) -> Dictionary {
-        let mut r = Dictionary::new();
-        let mut blend_shapes = Dictionary::new();
+    pub fn ifacial_mocap(data: PackedByteArray) -> Dictionary<GString, Variant> {
+        let mut r = Dictionary::<GString, Variant>::new();
+        let mut blend_shapes = Dictionary::<GString, Variant>::new();
 
         match std::str::from_utf8(data.as_slice()) {
             Ok(v) => {
@@ -97,7 +101,8 @@ impl DataParser {
                                 // TODO maybe use https://github.com/BurntSushi/aho-corasick for faster replace?
                                 .replace("_L", "left")
                                 .replace("_R", "right")
-                                .to_lowercase(),
+                                .to_lowercase()
+                                .as_str(),
                             f32::from(v.parse::<i16>().unwrap_or(0)) / 100.0,
                         );
                     } else if v.is_empty() {
@@ -111,13 +116,13 @@ impl DataParser {
             }
         }
 
-        let _ = r.insert("blend_shapes", blend_shapes);
+        let _ = r.insert("blend_shapes", blend_shapes.to_godot());
         r
     }
 
     #[func]
-    pub fn vtube_studio(data: PackedByteArray) -> Dictionary {
-        let mut r = Dictionary::new();
+    pub fn vtube_studio(data: PackedByteArray) -> Dictionary<GString, Variant> {
+        let mut r = Dictionary::<GString, Variant>::new();
 
         #[derive(Debug, Default, Serialize, Deserialize)]
         pub struct VTubeStudioData {
@@ -139,11 +144,10 @@ impl DataParser {
             pub v: f32,
         }
 
-        let data = serde_json::from_slice::<VTubeStudioData>(data.as_slice())
-            .unwrap_or_else(|e| {
-                error!("{e}");
-                VTubeStudioData::default()
-            });
+        let data = serde_json::from_slice::<VTubeStudioData>(data.as_slice()).unwrap_or_else(|e| {
+            error!("{e}");
+            VTubeStudioData::default()
+        });
 
         let _ = r.insert("rotation", data.rotation.unwrap_or_default());
         let _ = r.insert("position", data.position.unwrap_or_default());
@@ -152,13 +156,14 @@ impl DataParser {
         let _ = r.insert(
             "blend_shapes",
             Array::from_iter(data.blend_shapes.unwrap_or_default().into_iter().map(|v| {
-                let mut r = Dictionary::new();
+                let mut r: Dictionary<GString, Variant> = Dictionary::new();
 
                 let _ = r.insert("k", v.k.to_lowercase());
                 let _ = r.insert("v", v.v);
 
                 r
-            })),
+            }))
+            .to_godot(),
         );
 
         r
